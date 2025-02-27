@@ -1,0 +1,36 @@
+# Learn more about configuring your app at https://shopify.dev/docs/apps/tools/cli/configuration
+
+client_id = "c681f9ae4a4af1ba4c52643a5e9873ea"
+application_url = "https://poker-copy-omaha-appliance.trycloudflare.com"
+embedded = true
+name = "email send"
+handle = "email-send"
+
+[build]
+include_config_on_deploy = true
+automatically_update_urls_on_dev = true
+
+[webhooks]
+api_version = "2025-01"
+
+  [[webhooks.subscriptions]]
+  topics = [ "app/uninstalled" ]
+  uri = "/webhooks/app/uninstalled"
+
+  [[webhooks.subscriptions]]
+  topics = [ "app/scopes_update" ]
+  uri = "/webhooks/app/scopes_update"
+
+[access_scopes]
+# Learn more at https://shopify.dev/docs/apps/tools/cli/configuration#access_scopes
+scopes = "write_products"
+
+[auth]
+redirect_urls = [
+  "https://poker-copy-omaha-appliance.trycloudflare.com/auth/callback",
+  "https://poker-copy-omaha-appliance.trycloudflare.com/auth/shopify/callback",
+  "https://poker-copy-omaha-appliance.trycloudflare.com/api/auth/callback"
+]
+
+[pos]
+embedded = false
