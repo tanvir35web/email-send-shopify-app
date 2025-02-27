@@ -15,7 +15,7 @@ type CreateCampaingsFormProps = {
   activate: boolean;
   setActivate: React.Dispatch<React.SetStateAction<boolean>>;
 };
-const resend = new Resend("");
+const resend = new Resend("api key here...");
 
 export const action: ActionFunction = async ({ request }) => {
   console.log("Hit the action...");
