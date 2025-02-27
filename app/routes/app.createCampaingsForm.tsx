@@ -9,13 +9,30 @@ import {
 import { useCallback, useState } from "react";
 import { Form, useActionData, useSubmit } from "@remix-run/react";
 import type { ActionFunction } from "@remix-run/node";
+import { Resend } from "resend";
 
 type CreateCampaingsFormProps = {
   activate: boolean;
   setActivate: React.Dispatch<React.SetStateAction<boolean>>;
 };
+const resend = new Resend("");
 
-export const action: ActionFunction = async ({ request }) => {};
+export const action: ActionFunction = async ({ request }) => {
+  console.log("Hit the action...");
+  const { data, error } = await resend.emails.send({
+    from: "REMIX <onboarding@resend.dev>",
+    to: "tanvir.niter09@gmail.com",
+    subject: "Hello World from Shopify App (Email Sender)",
+    html: "<p>Congrats on sending your <strong>First email</strong>!</p>",
+  });
+
+  if (error) {
+    return new Response(JSON.stringify({ error }), { status: 500 });
+  }
+
+  console.log("Email sent: ", data);
+  return new Response(JSON.stringify({ data }), { status: 200 });
+};
 
 const CreateCampaingsForm: React.FC<CreateCampaingsFormProps> = ({
   activate,
@@ -36,7 +53,7 @@ const CreateCampaingsForm: React.FC<CreateCampaingsFormProps> = ({
 
   console.log("ActionData : ", actionData);
 
-  const sendEmail = () => submit({}, { replace: true, method: "POST" });
+  const sendEmails = () => submit({}, { replace: true, method: "POST" });
 
   return (
     <Page>
@@ -48,7 +65,7 @@ const CreateCampaingsForm: React.FC<CreateCampaingsFormProps> = ({
           title="Create new Email campaing"
           primaryAction={{
             content: "Send",
-            onAction: sendEmail,
+            onAction: sendEmails,
           }}
           secondaryActions={[
             {
@@ -58,7 +75,7 @@ const CreateCampaingsForm: React.FC<CreateCampaingsFormProps> = ({
           ]}
         >
           <Modal.Section>
-            <Form>
+            <Form onSubmit={sendEmails} action="/app/createcampaingsform" method="post">
               <Layout>
                 <Layout.Section>
                   <TextField
