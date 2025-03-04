@@ -5,9 +5,10 @@ import {
   Modal,
   Page,
   TextField,
+  Toast,
 } from "@shopify/polaris";
-import { useCallback, useState } from "react";
-import { Form, useActionData, useSubmit } from "@remix-run/react";
+import { useState, useEffect } from "react";
+import { Form, useActionData } from "@remix-run/react";
 import type { ActionFunction } from "@remix-run/node";
 import { Resend } from "resend";
 
@@ -15,109 +16,140 @@ type CreateCampaingsFormProps = {
   activate: boolean;
   setActivate: React.Dispatch<React.SetStateAction<boolean>>;
 };
-const resend = new Resend("api key here...");
 
 export const action: ActionFunction = async ({ request }) => {
-  console.log("Hit the action...");
-  const { data, error } = await resend.emails.send({
-    from: "REMIX <onboarding@resend.dev>",
-    to: "tanvir.niter09@gmail.com",
-    subject: "Hello World from Shopify App (Email Sender)",
-    html: "<p>Congrats on sending your <strong>First email</strong>!</p>",
-  });
+  const resend = new Resend("re_ZZSKvgtW_CtNCFU4FZSTH6RirqTDM1ZnN");
 
-  if (error) {
-    return new Response(JSON.stringify({ error }), { status: 500 });
+  const formData = await request.formData();
+  const to = formData.get("to") as string;
+  const subject = formData.get("subject") as string;
+  const content = formData.get("content") as string;
+
+  if (!to || !subject || !content) {
+    return new Response(JSON.stringify({ error: "Missing fields" }), {
+      status: 400,
+    });
   }
 
-  console.log("Email sent: ", data);
-  return new Response(JSON.stringify({ data }), { status: 200 });
+  const { data, error } = await resend.emails.send({
+    from: "REMIX <onboarding@resend.dev>",
+    to,
+    subject,
+    html: `<p>${content}</p>`,
+  });
+
+  return error
+    ? new Response(JSON.stringify({ error }), { status: 500 })
+    : new Response(JSON.stringify({ data }), { status: 200 });
 };
 
 const CreateCampaingsForm: React.FC<CreateCampaingsFormProps> = ({
   activate,
   setActivate,
 }) => {
-  const [value, setValue] = useState("");
+  const [formData, setFormData] = useState({
+    campaignName: "",
+    to: "",
+    corporation: "",
+    from: "",
+    subject: "",
+    content: "",
+  });
 
-  const handleChange = useCallback(() => setActivate(!activate), [activate]);
-  const handleChangeText = useCallback(
-    (newValue: string) => setValue(newValue),
-    [],
-  );
-
-  const activator = <Button onClick={handleChange}>Open</Button>;
-
-  const submit = useSubmit();
+  const [toastMassage, setToastMassage] = useState<string | null>(null);
   const actionData = useActionData<typeof action>();
 
-  console.log("ActionData : ", actionData);
+  useEffect(() => {
+    if (actionData) {
+      if (actionData.error) {
+        setToastMassage("Error sending email!");
+      } else {
+        setToastMassage("Email sent successfully!");
+        // setActivate(false);
+      }
+    }
+  }, [actionData, setActivate]);
 
-  const sendEmails = () => submit({}, { replace: true, method: "POST" });
+  const handleChange = (field: string) => (value: string) => {
+    setFormData((prev) => ({ ...prev, [field]: value }));
+  };
+
+  const activator = (
+    <Button onClick={() => setActivate(!activate)}>Open</Button>
+  );
 
   return (
     <Page>
       <Frame>
+        {toastMassage && (
+          <Toast
+            content={toastMassage}
+            onDismiss={() => setToastMassage(null)}
+          />
+        )}
         <Modal
           activator={activator}
           open={activate}
-          onClose={handleChange}
-          title="Create new Email campaing"
-          primaryAction={{
-            content: "Send",
-            onAction: sendEmails,
-          }}
-          secondaryActions={[
-            {
-              content: "Finish later",
-              onAction: () => {},
-            },
-          ]}
+          onClose={() => setActivate(false)}
+          title="Create new Email Campaign"
+          primaryAction={{ content: "Send", onAction: () => {} }}
+          secondaryActions={[{ content: "Finish later", onAction: () => {} }]}
         >
           <Modal.Section>
-            <Form onSubmit={sendEmails} action="/app/createcampaingsform" method="post">
+            <Form method="post" action="/app/createcampaingsform">
               <Layout>
                 <Layout.Section>
                   <TextField
-                    label="Campaing Name"
-                    value={value}
-                    onChange={handleChangeText}
+                    label="Campaign Name"
+                    name="campaignName"
+                    value={formData.campaignName}
+                    onChange={handleChange("campaignName")}
                     autoComplete="off"
                   />
                   <TextField
                     label="To"
-                    value={value}
-                    onChange={handleChangeText}
+                    name="to"
+                    value={formData.to}
+                    onChange={handleChange("to")}
                     autoComplete="off"
                   />
                   <TextField
                     label="Corporation"
-                    value={value}
-                    onChange={handleChangeText}
+                    name="corporation"
+                    value={formData.corporation}
+                    onChange={handleChange("corporation")}
                     autoComplete="off"
                   />
                   <TextField
-                    label="Form"
-                    value={value}
-                    onChange={handleChangeText}
+                    label="From"
+                    name="from"
+                    value={formData.from}
+                    onChange={handleChange("from")}
                     autoComplete="off"
                   />
                   <TextField
                     label="Email Subject"
-                    value={value}
-                    onChange={handleChangeText}
+                    name="subject"
+                    value={formData.subject}
+                    onChange={handleChange("subject")}
                     autoComplete="off"
                   />
                   <TextField
                     label="Content"
-                    value={value}
-                    onChange={handleChangeText}
+                    name="content"
+                    value={formData.content}
+                    onChange={handleChange("content")}
                     autoComplete="off"
                   />
                   <Button submit>Send</Button>
                 </Layout.Section>
               </Layout>
             </Form>
+            {actionData && (
+              <p style={{ color: actionData.error ? "red" : "green" }}>
+                {actionData.error || "Email sent successfully!"}
+              </p>
+            )}
           </Modal.Section>
         </Modal>
       </Frame>

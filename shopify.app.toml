@@ -1,7 +1,7 @@
 # Learn more about configuring your app at https://shopify.dev/docs/apps/tools/cli/configuration
 
 client_id = "c681f9ae4a4af1ba4c52643a5e9873ea"
-application_url = "https://poker-copy-omaha-appliance.trycloudflare.com"
+application_url = "https://elder-clinic-viewing-reproduction.trycloudflare.com"
 embedded = true
 name = "email send"
 handle = "email-send"
@@ -27,9 +27,9 @@ scopes = "write_products"
 
 [auth]
 redirect_urls = [
-  "https://poker-copy-omaha-appliance.trycloudflare.com/auth/callback",
-  "https://poker-copy-omaha-appliance.trycloudflare.com/auth/shopify/callback",
-  "https://poker-copy-omaha-appliance.trycloudflare.com/api/auth/callback"
+  "https://elder-clinic-viewing-reproduction.trycloudflare.com/auth/callback",
+  "https://elder-clinic-viewing-reproduction.trycloudflare.com/auth/shopify/callback",
+  "https://elder-clinic-viewing-reproduction.trycloudflare.com/api/auth/callback"
 ]
 
 [pos]
